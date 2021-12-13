@@ -1,0 +1,3281 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "3D Repo IO",
+		"version": "4.20.2"
+	},
+	"servers": [{
+		"url": "https://staging.dev.3drepo.io:443/api/v5"
+	}],
+	"security": [{
+		"keyAuth": []
+	}],
+	"basePath": "/api/v5",
+	"paths": {
+		"/teamspaces/{teamspace}/projects/{project}/containers": {
+			"post": {
+				"description": "Add a new container to the specified project the user is admin of",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "addContainer",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": [
+									"name",
+									"unit",
+									"type"
+								],
+								"properties": {
+									"name": {
+										"type": "string",
+										"example": "Lego House Architecture",
+										"description": "Name of the container - this has to be unique within the project",
+										"maxLength": 120
+									},
+									"unit": {
+										"type": "string",
+										"enum": [
+											"mm",
+											"cm",
+											"dm",
+											"m",
+											"ft"
+										],
+										"example": "mm",
+										"description": "Unit of measurement"
+									},
+									"desc": {
+										"type": "string",
+										"example": "The Architecture model of the Lego House",
+										"description": "Container description",
+										"maxLength": 50
+									},
+									"code": {
+										"type": "string",
+										"example": "LEGO_ARCHIT_001",
+										"description": "Container reference code"
+									},
+									"type": {
+										"type": "string",
+										"example": "Architecture",
+										"description": "Container type"
+									},
+									"surveyPoints": {
+										"type": "array",
+										"description": "Survey points for container location",
+										"items": {
+											"type": "object",
+											"properties": {
+												"position": {
+													"description": "The point coordinate that maps to the latLong value (should be in OpenGL axis conventions)",
+													"type": "array",
+													"items": {
+														"type": "float",
+														"example": 23.45,
+														"minItems": 3,
+														"maxItems": 3
+													}
+												},
+												"latLong": {
+													"type": "array",
+													"description": "The latitude and longitude of the survey point",
+													"items": {
+														"type": "float",
+														"example": 23.45,
+														"minItems": 2,
+														"maxItems": 2
+													}
+												}
+											}
+										}
+									},
+									"angleFromNorth": {
+										"type": "integer",
+										"example": 100,
+										"description": "Angle from North in degrees"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Container ID",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"format": "uuid",
+											"description": "Container ID",
+											"example": "ef0855b6-4cc7-4be1-b2d6-c032dce7806a"
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/projectNotFound"
+					}
+				}
+			},
+			"get": {
+				"description": "Get a list of containers within the specified project the user has access to",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "getContainerList",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "returns list of containers",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"containers": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"_id": {
+														"type": "string",
+														"description": "Container ID",
+														"example": "ef0855b6-4cc7-4be1-b2d6-c032dce7806a"
+													},
+													"name": {
+														"type": "string",
+														"description": "name of the container",
+														"example": "Structure"
+													},
+													"role": {
+														"$ref": "#/components/roles"
+													},
+													"isFavourite": {
+														"type": "boolean",
+														"description": "whether the container is a favourited item for the user"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/containers/{container}/stats": {
+			"get": {
+				"description": "Get the statistics and general information about a container",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "getContainerStats",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"container": null,
+						"name": "container",
+						"description": "Container ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "returns the statistics of a container",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"description": "Container ID",
+											"example": "ef0855b6-4cc7-4be1-b2d6-c032dce7806a"
+										},
+										"type": {
+											"type": "string",
+											"description": "Name of the container",
+											"example": "Structure"
+										},
+										"code": {
+											"type": "string",
+											"description": "Container code",
+											"example": "STR-01"
+										},
+										"status": {
+											"type": "string",
+											"description": "Current status of the container",
+											"example": "ok"
+										},
+										"units": {
+											"type": "string",
+											"enum": [
+												"mm",
+												"cm",
+												"dm",
+												"m",
+												"ft"
+											],
+											"description": "Container units",
+											"example": "mm"
+										},
+										"revisions": {
+											"type": "object",
+											"properties": {
+												"total": {
+													"type": "integer",
+													"description": "Number of revisions (non voided) in the container",
+													"example": 10
+												},
+												"lastUpdated": {
+													"type": "integer",
+													"description": "Timestamp(ms) of when the container was last updated",
+													"example": 1630598072000
+												},
+												"latestRevision": {
+													"type": "string",
+													"description": "Revision name of the latest version",
+													"example": "rev1"
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/containers/favourites": {
+			"patch": {
+				"description": "Add containers to the user's favourites list",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "appendContainers",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "ID of project",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"containers": {
+										"type": "array",
+										"items": {
+											"type": "string",
+											"format": "uuid"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "adds the containers found in the request body to the user's favourites list"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			},
+			"delete": {
+				"description": "Remove containers from the user's favourites list",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "deleteContainers",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "ID of project",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"containers": {
+										"type": "array",
+										"items": {
+											"type": "string",
+											"format": "uuid"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "removes the containers found in the request body from the user's favourites list"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/containers/{container}": {
+			"delete": {
+				"description": "Delete container from project the user is admin of",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "deleteContainer",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"container": null,
+						"name": "container",
+						"description": "Container ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Container removed."
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/containerNotFound"
+					}
+				}
+			},
+			"patch": {
+				"description": "Updates the settings of a container",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "updateSettings",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "ID of project",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"container": null,
+						"name": "container",
+						"description": "ID of container",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"name": {
+										"type": "String",
+										"example": "container1"
+									},
+									"desc": {
+										"type": "String",
+										"example": "description1"
+									},
+									"type": {
+										"type": "String",
+										"example": "type1"
+									},
+									"surveyPoints": {
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"position": {
+													"type": "array",
+													"items": {
+														"type": "float",
+														"example": 23.45
+													}
+												},
+												"latLong": {
+													"type": "array",
+													"items": {
+														"type": "float",
+														"example": 23.45
+													}
+												}
+											}
+										}
+									},
+									"angleFromNorth": {
+										"type": "integer",
+										"example": 100
+									},
+									"unit": {
+										"type": "string",
+										"example": "mm"
+									},
+									"defaultView": {
+										"type": "string",
+										"format": "uuid",
+										"example": "374bb150-065f-11ec-8edf-ab0f7cc84da8"
+									},
+									"defaultLegend": {
+										"type": "string",
+										"format": "uuid",
+										"example": "374bb150-065f-11ec-8edf-ab0f7cc84da8"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "updates the settings of the container"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			},
+			"get": {
+				"description": "Get the model settings of container",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "getSettings",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"container": null,
+						"name": "container",
+						"description": "Container ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "returns the model settings of a container",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/modelSettings"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/containers/{container}/groups/export": {
+			"post": {
+				"description": "Export a list of groups from the container",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "ExportContainerGroups",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					},
+					{
+						"container": null,
+						"name": "container",
+						"description": "Container ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					}
+				],
+				"requestBody": {
+					"description": "List of group ids to export",
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"groups": {
+										"type": "array",
+										"items": {
+											"type": "string",
+											"format": "uuid"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "returns list of containers",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/group"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/invalidArguments"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/containersNotFound"
+					}
+				},
+				"links": {
+					"importGroups": {
+						"operationId": "ImportContainerGroups",
+						"requestBody": {
+							"groups": "$response.body#/groups"
+						}
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/containers/{container}/groups/import": {
+			"post": {
+				"description": "Import a list of groups into the container",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "ImportContainerGroups",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					},
+					{
+						"container": null,
+						"name": "container",
+						"description": "Container ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					}
+				],
+				"requestBody": {
+					"description": "List of group ids to export",
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"groups": {
+											"$ref": "#/components/schemas/group"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Imported successfully"
+					},
+					"400": {
+						"$ref": "#/components/responses/invalidArguments"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/containerNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/containers/{container}/revisions": {
+			"get": {
+				"description": "Get a list of revisions of a container",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "getRevisions",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					},
+					{
+						"container": null,
+						"name": "container",
+						"description": "Container ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					},
+					{
+						"showVoid": null,
+						"name": "showVoid",
+						"description": "Include void revisions or not",
+						"in": "query",
+						"required": false,
+						"schema": null,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "returns list of revisions",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"revisions": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"_id": {
+														"type": "string",
+														"description": "Revision ID",
+														"example": "ef0855b6-4cc7-4be1-b2d6-c032dce7806a"
+													},
+													"author": {
+														"type": "string",
+														"description": "name of the creator of the revision",
+														"example": "someUser"
+													},
+													"timestamp": {
+														"type": "string",
+														"description": "Revision creation date",
+														"example": "2018-06-28T11:15:47.000Z"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			},
+			"post": {
+				"description": "Create a new revision.",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "createNewRevision",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					},
+					{
+						"container": null,
+						"name": "container",
+						"description": "Container ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"tag": {
+										"description": "Unique revision name",
+										"type": "string",
+										"example": "rev01"
+									},
+									"desc": {
+										"description": "Description of the revision",
+										"type": "string",
+										"example": "Initial design"
+									},
+									"importAnimations": {
+										"type": "bool",
+										"description": "Whether animations should be imported (Only relevant for .SPM uploads)"
+									},
+									"file": {
+										"type": "string",
+										"format": "binary"
+									}
+								},
+								"required": [
+									"tag",
+									"file"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "updates the status of the revision"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/containers/{container}/revisions/{revision}": {
+			"patch": {
+				"description": "Update a revision. Currently only the void status can be updated.",
+				"tags": [
+					"Containers"
+				],
+				"operationId": "updateRevisionStatus",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					},
+					{
+						"container": null,
+						"name": "container",
+						"description": "Container ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					},
+					{
+						"revision": null,
+						"name": "revision",
+						"description": "Revision ID or Revision tag",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"void": {
+										"description": "The new status value",
+										"type": "boolean"
+									}
+								},
+								"required": [
+									"status"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "updates the status of the revision"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/federations": {
+			"post": {
+				"description": "Add a new federation to the specified project the user is admin of",
+				"tags": [
+					"Federations"
+				],
+				"operationId": "addFederation",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": [
+									"name",
+									"unit",
+									"type"
+								],
+								"properties": {
+									"name": {
+										"type": "string",
+										"example": "Lego House Architecture",
+										"description": "Name of the federation - this has to be unique within the project",
+										"maxLength": 120
+									},
+									"unit": {
+										"type": "string",
+										"enum": [
+											"mm",
+											"cm",
+											"dm",
+											"m",
+											"ft"
+										],
+										"example": "mm",
+										"description": "Unit of measurement"
+									},
+									"desc": {
+										"type": "string",
+										"example": "The Architecture model of the Lego House",
+										"description": "Federation description",
+										"maxLength": 50
+									},
+									"code": {
+										"type": "string",
+										"example": "LEGO_ARCHIT_001",
+										"description": "Federation reference code"
+									},
+									"type": {
+										"type": "string",
+										"example": "Architecture",
+										"description": "Federation type"
+									},
+									"surveyPoints": {
+										"type": "array",
+										"description": "Survey points for federation location",
+										"items": {
+											"type": "object",
+											"properties": {
+												"position": {
+													"description": "The point coordinate that maps to the latLong value (should be in OpenGL axis conventions)",
+													"type": "array",
+													"items": {
+														"type": "float",
+														"example": 23.45,
+														"minItems": 3,
+														"maxItems": 3
+													}
+												},
+												"latLong": {
+													"type": "array",
+													"description": "The latitude and longitude of the survey point",
+													"items": {
+														"type": "float",
+														"example": 23.45,
+														"minItems": 2,
+														"maxItems": 2
+													}
+												}
+											}
+										}
+									},
+									"angleFromNorth": {
+										"type": "integer",
+										"example": 100,
+										"description": "Angle from North in degrees"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Federation ID",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"_id": {
+											"type": "string",
+											"format": "uuid",
+											"description": "Federation ID",
+											"example": "ef0855b6-4cc7-4be1-b2d6-c032dce7806a"
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/projectNotFound"
+					}
+				}
+			},
+			"get": {
+				"description": "Get a list of federations within the specified project the user has access to",
+				"tags": [
+					"Federations"
+				],
+				"operationId": "getFederationList",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "returns list of federations",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"federations": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "string",
+														"description": "Federation ID",
+														"example": "02b05cb0-0057-11ec-8d97-41a278fb55fd"
+													},
+													"name": {
+														"type": "string",
+														"description": "name of the federation",
+														"example": "Complete structure"
+													},
+													"role": {
+														"$ref": "#/components/roles"
+													},
+													"isFavourite": {
+														"type": "boolean",
+														"description": "whether the federation is a favourited item for the user"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/federationNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/federations/favourites": {
+			"patch": {
+				"description": "Add federations to the user's favourites list",
+				"tags": [
+					"Federations"
+				],
+				"operationId": "appendFederations",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "ID of project",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"federations": {
+										"type": "array",
+										"items": {
+											"type": "string",
+											"format": "uuid"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "adds the federations found in the request body to the user's favourites list"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			},
+			"delete": {
+				"description": "Remove federations from the user's favourites list",
+				"tags": [
+					"Federations"
+				],
+				"operationId": "deleteFederations",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "ID of project",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"federations": {
+										"type": "array",
+										"items": {
+											"type": "string",
+											"format": "uuid"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "removes the federations found in the request body from the user's favourites list"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/federations/{federation}/stats": {
+			"get": {
+				"description": "Get the statistics and general information about a federation",
+				"tags": [
+					"Federations"
+				],
+				"operationId": "getFederationStats",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"federation": null,
+						"name": "federation",
+						"description": "Federation ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "returns the statistics of a federation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"code": {
+											"type": "string",
+											"description": "Federation code",
+											"example": "STR-01"
+										},
+										"status": {
+											"type": "string",
+											"description": "Current status of the federation",
+											"example": "ok"
+										},
+										"subModels": {
+											"type": "array",
+											"description": "The IDs of the models the federation consists of",
+											"items": {
+												"type": "string",
+												"format": "uuid"
+											}
+										},
+										"tickets": {
+											"type": "object",
+											"properties": {
+												"issues": {
+													"type": "integer",
+													"description": "The number of non closed issues of the federation"
+												},
+												"risks": {
+													"type": "integer",
+													"description": "The number of unmitigated risks of the federation"
+												}
+											}
+										},
+										"category": {
+											"type": "string",
+											"description": "Category of the federation",
+											"example": null
+										},
+										"lastUpdated": {
+											"type": "integer",
+											"description": "Timestamp(ms) of when any of the submodels was updated",
+											"example": 1630598072000
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/federations/{federation}": {
+			"delete": {
+				"description": "Delete federation from project the user is admin of",
+				"tags": [
+					"Federations"
+				],
+				"operationId": "deleteFederation",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"federation": null,
+						"name": "federation",
+						"description": "Federation ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Federation removed."
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/federationNotFound"
+					}
+				}
+			},
+			"patch": {
+				"description": "Updates the settings of a federation",
+				"tags": [
+					"Federations"
+				],
+				"operationId": "updateSettings",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "ID of project",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"federation": null,
+						"name": "federation",
+						"description": "ID of federation",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"name": {
+										"type": "String",
+										"example": "federation1"
+									},
+									"desc": {
+										"type": "String",
+										"example": "description1"
+									},
+									"type": {
+										"type": "String",
+										"example": "type1"
+									},
+									"surveyPoints": {
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"position": {
+													"type": "array",
+													"items": {
+														"type": "float",
+														"example": 23.45
+													}
+												},
+												"latLong": {
+													"type": "array",
+													"items": {
+														"type": "float",
+														"example": 23.45
+													}
+												}
+											}
+										}
+									},
+									"angleFromNorth": {
+										"type": "integer",
+										"example": 100
+									},
+									"unit": {
+										"type": "string",
+										"enum": [
+											"mm",
+											"cm",
+											"dm",
+											"m",
+											"ft"
+										],
+										"example": "mm"
+									},
+									"defaultView": {
+										"type": "string",
+										"format": "uuid",
+										"example": "374bb150-065f-11ec-8edf-ab0f7cc84da8"
+									},
+									"defaultLegend": {
+										"type": "string",
+										"format": "uuid",
+										"example": "374bb150-065f-11ec-8edf-ab0f7cc84da8"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "updates the settings of the federation"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			},
+			"get": {
+				"description": "Get the model settings of federation",
+				"tags": [
+					"Federations"
+				],
+				"operationId": "getSettings",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"federation": null,
+						"name": "federation",
+						"description": "Federation ID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "returns the model settings of a federation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/modelSettings"
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/teamspaceNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/federations/{federation}/groups/export": {
+			"post": {
+				"description": "Export a list of groups from the federation",
+				"tags": [
+					"Federations"
+				],
+				"operationId": "ExportFederationGroups",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					},
+					{
+						"federation": null,
+						"name": "federation",
+						"description": "Federation ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					}
+				],
+				"requestBody": {
+					"description": "List of group ids to export",
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"groups": {
+										"type": "array",
+										"items": {
+											"type": "string",
+											"format": "uuid"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "returns list of federations",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/group"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/invalidArguments"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/federationsNotFound"
+					}
+				},
+				"links": {
+					"importGroups": {
+						"operationId": "ImportFederationGroups",
+						"requestBody": {
+							"groups": "$response.body#/groups"
+						}
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects/{project}/federations/{federation}/groups/import": {
+			"post": {
+				"description": "Import a list of groups into the federation",
+				"tags": [
+					"Federations"
+				],
+				"operationId": "ImportFederationGroups",
+				"parameters": [{
+						"teamspace": null,
+						"name": "teamspace",
+						"description": "Name of teamspace",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"project": null,
+						"name": "project",
+						"description": "Project ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					},
+					{
+						"federation": null,
+						"name": "federation",
+						"description": "Federation ID",
+						"in": "path",
+						"required": true,
+						"schema": null,
+						"type": "string"
+					}
+				],
+				"requestBody": {
+					"description": "List of group ids to export",
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"groups": {
+											"$ref": "#/components/schemas/group"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Imported successfully"
+					},
+					"400": {
+						"$ref": "#/components/responses/invalidArguments"
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					},
+					"404": {
+						"$ref": "#/components/responses/federationNotFound"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/projects": {
+			"get": {
+				"description": "Get a list of projects within the specified teamspace the user has access to",
+				"tags": [
+					"Projects"
+				],
+				"operationId": "getProjectList",
+				"parameters": [{
+					"teamspace": null,
+					"name": "teamspace",
+					"description": "name of teamspace",
+					"in": "path",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "returns list of projects",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"projects": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "string",
+														"description": "Project ID",
+														"example": "ef0857b6-4cc7-4be1-b2d6-c032dce7806a"
+													},
+													"name": {
+														"type": "string",
+														"description": "name of the teamspace",
+														"example": "teamspace1"
+													},
+													"isAdmin": {
+														"type": "boolean",
+														"description": "whether the user is an admin"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					}
+				}
+			}
+		},
+		"/teamspaces": {
+			"get": {
+				"description": "Get a list of teamspaces the user has access to",
+				"tags": [
+					"Teamspaces"
+				],
+				"operationId": "getTeamspaceList",
+				"responses": {
+					"200": {
+						"description": "returns list of teamspace",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"teamspaces": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"name": {
+														"type": "string",
+														"description": "name of the teamspace",
+														"example": "teamspace1"
+													},
+													"isAdmin": {
+														"type": "boolean",
+														"description": "whether the user is an admin"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					}
+				}
+			}
+		},
+		"/teamspaces/{teamspace}/members": {
+			"get": {
+				"description": "Get the list of members within the teamspace",
+				"tags": [
+					"Teamspaces"
+				],
+				"operationId": "getTeamspaceMembers",
+				"parameters": [{
+					"teamspace": null,
+					"name": "teamspace",
+					"description": "name of teamspace",
+					"in": "path",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "returns list of teamspace members with their basic information",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"members": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"user": {
+														"type": "string",
+														"description": "User name",
+														"example": "johnPaul01"
+													},
+													"firstName": {
+														"type": "string",
+														"description": "First name",
+														"example": "John"
+													},
+													"lastName": {
+														"type": "string",
+														"description": "Last name",
+														"example": "Paul"
+													},
+													"company": {
+														"type": "string",
+														"description": "Name of the company",
+														"example": "3D Repo Ltd"
+													},
+													"job": {
+														"type": "string",
+														"description": "Job within the teamspace",
+														"example": "Project Manager"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					}
+				}
+			}
+		},
+		"/login": {
+			"post": {
+				"description": "Logs a user in",
+				"tags": [
+					"Auth"
+				],
+				"operationId": "login",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"user": {
+										"type": "string",
+										"description": "The username or email of the user",
+										"example": "username1"
+									},
+									"password": {
+										"type": "string",
+										"description": "The password of the user",
+										"example": "password1"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Authenticates the user and establish a session"
+					},
+					"400": {
+						"$ref": "#/components/responses/tooManyLoginAttempts"
+					},
+					"401": {
+						"$ref": "#/components/responses/alreadyLoggedIn"
+					}
+				}
+			},
+			"get": {
+				"description": "Verifies if there is a valid session with the request and returns the username",
+				"tags": [
+					"Auth"
+				],
+				"operationId": "getUsername",
+				"responses": {
+					"200": {
+						"description": "Returns the username of the user currently logged in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"username": {
+											"type": "string",
+											"description": "The username of the user currently logged in",
+											"example": "Username1"
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					}
+				}
+			}
+		},
+		"/logout": {
+			"post": {
+				"description": "Logs a user out",
+				"tags": [
+					"Auth"
+				],
+				"operationId": "logout",
+				"responses": {
+					"200": {
+						"description": "User is logged out and session is destroyed."
+					},
+					"401": {
+						"$ref": "#/components/responses/notLoggedIn"
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"responses": {
+			"ok": {
+				"description": "OK",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "OK"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "OK"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 200
+								}
+							}
+						}
+					}
+				}
+			},
+			"notLoggedIn": {
+				"description": "You are not logged in",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "NOT_LOGGED_IN"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "You are not logged in"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 401
+								}
+							}
+						}
+					}
+				}
+			},
+			"alreadyLoggedIn": {
+				"description": "You are already logged in",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "ALREADY_LOGGED_IN"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "You are already logged in"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 401
+								}
+							}
+						}
+					}
+				}
+			},
+			"notAuthorized": {
+				"description": "You do not have sufficient access rights for this action",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "NOT_AUTHORIZED"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "You do not have sufficient access rights for this action"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 401
+								}
+							}
+						}
+					}
+				}
+			},
+			"licenceExpired": {
+				"description": "Licence expired.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "LICENCE_EXPIRED"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Licence expired."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 401
+								}
+							}
+						}
+					}
+				}
+			},
+			"tooManyLoginAttempts": {
+				"description": "Too many unsuccessful login attempts! Account locked",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "TOO_MANY_LOGIN_ATTEMPTS"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Too many unsuccessful login attempts! Account locked"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			},
+			"userNotVerified": {
+				"description": "Account not yet verified. Please check your email.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "USER_NOT_VERIFIED"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Account not yet verified. Please check your email."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			},
+			"incorrectUsernameOrPassword": {
+				"description": "Incorrect username or password",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "INCORRECT_USERNAME_OR_PASSWORD"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Incorrect username or password"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			},
+			"unknown": {
+				"description": "Unknown error occured. Please contact support.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "UNKNOWN"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Unknown error occured. Please contact support."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 500
+								}
+							}
+						}
+					}
+				}
+			},
+			"userNotFound": {
+				"description": "User not found.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "USER_NOT_FOUND"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "User not found."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"teamspaceNotFound": {
+				"description": "Teamspace not found.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "TEAMSPACE_NOT_FOUND"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Teamspace not found."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"projectNotFound": {
+				"description": "Project not found.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "PROJECT_NOT_FOUND"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Project not found."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"modelNotFound": {
+				"description": "Model not found.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "MODEL_NOT_FOUND"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Model not found."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"federationNotFound": {
+				"description": "Federation not found.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "FEDERATION_NOT_FOUND"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Federation not found."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"containerNotFound": {
+				"description": "Container not found.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "CONTAINER_NOT_FOUND"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Container not found."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"containerIsSubModel": {
+				"description": "Container is a submodel.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "CONTAINER_IS_SUB_MODEL"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Container is a submodel."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			},
+			"revisionNotFound": {
+				"description": "Revision not found.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "REVISION_NOT_FOUND"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Revision not found."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"groupNotFound": {
+				"description": "Group not found.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "GROUP_NOT_FOUND"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Group not found."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"unsupportedFileFormat": {
+				"description": "The file format is not supported",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "UNSUPPORTED_FILE_FORMAT"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "The file format is not supported"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			},
+			"maxSizeExceeded": {
+				"description": "The file is bigger than the maximum size allowed",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "MAX_SIZE_EXCEEDED"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "The file is bigger than the maximum size allowed"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			},
+			"quotaLimitExceeded": {
+				"description": "Insufficient quota.",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "QUOTA_LIMIT_EXCEEDED"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Insufficient quota."
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 401
+								}
+							}
+						}
+					}
+				}
+			},
+			"viewNotFound": {
+				"description": "View not found",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "VIEW_NOT_FOUND"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "View not found"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"legendNotFound": {
+				"description": "Legend not found",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "LEGEND_NOT_FOUND"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Legend not found"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 404
+								}
+							}
+						}
+					}
+				}
+			},
+			"invalidArguments": {
+				"description": "The arguments provided are not valid",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "INVALID_ARGUMENTS"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "The arguments provided are not valid"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 400
+								}
+							}
+						}
+					}
+				}
+			},
+			"queueConnectionError": {
+				"description": "There was a problem connecting to the queue. Please contact support",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "QUEUE_CONNECTION_ERROR"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "There was a problem connecting to the queue. Please contact support"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 500
+								}
+							}
+						}
+					}
+				}
+			},
+			"queueInsertionFailed": {
+				"description": "Failed to insert an item into the queue. Please contact support",
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string",
+									"description": "3D Repo error code",
+									"example": "QUEUE_INSERTION_FAILED"
+								},
+								"message": {
+									"type": "string",
+									"description": "A descriptive reason for the error",
+									"example": "Failed to insert an item into the queue. Please contact support"
+								},
+								"place": {
+									"type": "string",
+									"description": "Endpoint this error came from",
+									"example": "GET /v5/teamspaces"
+								},
+								"status": {
+									"type": "integer",
+									"format": "int32",
+									"description": "HTTP status code",
+									"example": 500
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"schemas": {
+			"roleDefinitions": {
+				"type": "string",
+				"enum": [
+					"admin",
+					"collaborator",
+					"commenter",
+					"viewer"
+				],
+				"description": "Possible Values:\n* `admin` - Administrator of the container/federation\n* `collaborator` - User has `commenter` right, plus the ability to upload new revisions\n* `commenter` - User has `viewer` rights, plus write access to tickets, groups and views\n* `viewer` - User has read access to the project"
+			},
+			"group": {
+				"description": "Group data",
+				"type": "object",
+				"properties": {
+					"_id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "Unique indentifier for the group"
+					},
+					"color": {
+						"type": "array",
+						"description": "color for the group. Must be an array of 3 or 4 values between 0 to 255",
+						"items": {
+							"type": "integer",
+							"minLength": 3,
+							"maxLength": 4
+						},
+						"example": [
+							0,
+							0,
+							255
+						]
+					},
+					"name": {
+						"type": "string",
+						"description": "name of the group",
+						"example": "Level 1 Facades"
+					},
+					"description": {
+						"type": "string",
+						"description": "Description of the group",
+						"example": "All facades on level 1"
+					},
+					"author": {
+						"type": "string",
+						"description": "Author of the group",
+						"example": "JaneDoe"
+					},
+					"updatedBy": {
+						"type": "string",
+						"description": "The user who last updated the group",
+						"example": "JohnDoe"
+					},
+					"createdAt": {
+						"type": "int64",
+						"description": "Timestamp when the group was created, epoch time in ms",
+						"example": 1632821117000
+					},
+					"updatedAt": {
+						"type": "int64",
+						"description": "Timestamp when the group was last updated, epoch time in ms",
+						"example": 1632821119000
+					},
+					"rules": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"field": {
+									"type": "string",
+									"description": "The BIM data field to query",
+									"example": "Floor"
+								},
+								"operator": {
+									"type": "string",
+									"enum": [
+										"IS_EMPTY",
+										"IS_NOT_EMPTY",
+										"IS",
+										"IS_NOT",
+										"CONTAINS",
+										"NOT_CONTAINS",
+										"REGEX",
+										"EQUALS",
+										"NOT_EQUALS",
+										"GT",
+										"GTE",
+										"LT",
+										"LTE",
+										"IN_RANGE",
+										"NOT_IN_RANGE"
+									],
+									"description": "Operator value on this field",
+									"example": "EQUALS"
+								},
+								"value": {
+									"type": "array",
+									"description": "The values to use in respective of the operator. This is evaluated under the union (OR) logic",
+									"items": {
+										"type": "number",
+										"example": 1
+									}
+								}
+							}
+						},
+						"description": "List of rules for the smart group. Rules are evaluated under a intersection (AND) logic"
+					},
+					"objects": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"account": {
+									"type": "string",
+									"example": "Company A",
+									"description": "Teamspace the objects belong in"
+								},
+								"model": {
+									"type": "string",
+									"format": "uuid",
+									"description": "Model ID"
+								},
+								"shared_ids": {
+									"type": "array",
+									"items": {
+										"type": "string",
+										"format": "uuid",
+										"description": "shared_ids of the meshes that belong in this group"
+									}
+								},
+								"ifc_guids": {
+									"type": "array",
+									"items": {
+										"type": "string",
+										"description": "IFC GUIDS that belong in this group",
+										"example": "P6hfZFcXRWKz/AAALJY/Zg"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"modelSettings": {
+				"description": "The settings of the model",
+				"type": "object",
+				"properties": {
+					"_id": {
+						"type": "string",
+						"format": "uuid",
+						"description": "Model ID",
+						"example": "3549ddf6-885d-4977-87f1-eeac43a0e818"
+					},
+					"name": {
+						"type": "string",
+						"description": "The name of the model",
+						"example": "Lego tree"
+					},
+					"desc": {
+						"type": "string",
+						"description": "The description of the model",
+						"example": "Model description"
+					},
+					"type": {
+						"type": "string",
+						"description": "The type of the model",
+						"example": "Structural"
+					},
+					"surveyPoints": {
+						"type": "array",
+						"description": "The survey points of the model",
+						"items": {
+							"type": "object",
+							"properties": {
+								"position": {
+									"type": "array",
+									"description": "The point coordinate that maps to the latLong value (should be in OpenGL axis conventions)",
+									"items": {
+										"type": "float",
+										"example": "23.56"
+									},
+									"minItems": 3,
+									"maxItems": 3
+								},
+								"latLong": {
+									"type": "array",
+									"description": "The latitude and longitude of the survey point",
+									"items": {
+										"type": "float",
+										"example": "23.56"
+									},
+									"minItems": 2,
+									"maxItems": 2
+								}
+							}
+						}
+					},
+					"angleFromNorth": {
+						"type": "integer",
+						"description": "The angle from north of the model",
+						"example": 150
+					},
+					"timestamp": {
+						"type": "integer",
+						"example": "1629976656315",
+						"description": "The date the last model was uploaded (in ms)"
+					},
+					"status": {
+						"type": "string",
+						"description": "The status of the model",
+						"example": "ok"
+					},
+					"defaultView": {
+						"type": "string",
+						"format": "uuid",
+						"description": "The ID of the view that is being used as default view",
+						"example": "3549ddf6-885d-4977-87f1-eeac43a0e818"
+					},
+					"defaultLegend": {
+						"type": "string",
+						"format": "uuid",
+						"description": "The ID of the legend that is being used as default legend",
+						"example": "3549ddf6-885d-4977-87f1-eeac43a0e818"
+					},
+					"unit": {
+						"type": "string",
+						"description": "The units of the model",
+						"example": "mm",
+						"enum": [
+							"mm",
+							"cm",
+							"dm",
+							"m",
+							"ft"
+						]
+					},
+					"code": {
+						"type": "string",
+						"description": "The code of the model",
+						"example": "MOD1"
+					},
+					"errorReason": {
+						"type": "object",
+						"description": "The the reason the model upload failed",
+						"properties": {
+							"message": {
+								"type": "string",
+								"description": "The error message",
+								"example": "System error occured. Please contact support."
+							},
+							"timestamp": {
+								"type": "integer",
+								"description": "The date the error occured (in ms)",
+								"example": "1629976656315"
+							},
+							"errorCode": {
+								"type": "string",
+								"description": "The error code",
+								"example": 14
+							}
+						}
+					}
+				}
+			}
+		},
+		"securitySchemes": {
+			"keyAuth": {
+				"type": "apiKey",
+				"in": "query",
+				"name": "key"
+			}
+		}
+	},
+	"tags": []
+}
